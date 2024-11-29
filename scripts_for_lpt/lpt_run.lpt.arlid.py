@@ -63,7 +63,7 @@ Additional datasets can be implemented natively by adding functions to lpt/readd
 Dataset Case Settings
 """
 dataset['label'] = 'ar'
-dataset['raw_data_parent_dir'] = '../../ar_objects/mask_data.testing7'
+dataset['raw_data_parent_dir'] = '../blob_detection/mask_data'
 dataset['raw_data_format'] = 'generic_netcdf_with_multiple_times'
 dataset['file_name_format'] = '%Y/%m/ar%Y%m%d%H.nc'
 dataset['data_time_interval'] = 1           # Time resolution of the data in hours.
