@@ -10,6 +10,8 @@ import argparse
 from retrieve_era5_fields_nc import retrieve_era5_fields_nc
 from ar_objects_mask import *
 
+## You need to set this for your system.
+DATA_DIRECTORY='/home/orca/data/model_anal/era5/from_rda'
 
 # Command line args:
 # Must specify at least YYYYMMDDHH_start and YYYYMMDDHH_end
@@ -53,7 +55,8 @@ def process_a_time(time_to_process, verbose=False):
     - Save the output
     """
 
-    F = retrieve_era5_fields_nc(time_to_process, verbose=verbose)
+    F = retrieve_era5_fields_nc(time_to_process, DATA_DIRECTORY,
+                                verbose=verbose)
 
     # Initialize mask object
     mask = ar_object_mask(time_to_process)

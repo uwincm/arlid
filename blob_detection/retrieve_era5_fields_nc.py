@@ -6,16 +6,27 @@ import calendar
 import glob
 import os
 
-def retrieve_era5_fields_nc(dt_this, verbose=True, uv200=False):
+def retrieve_era5_fields_nc(dt_this, data_directory, verbose=True, uv200=False):
     """
     retrieve_era5_fields_nc(dt_this, verbose=True, uv200=False)
     
     Read in the data fields from ERA5 for ARLiD.
+
+    Inputs:
+    - dt_this: A Python datetime-like object
+    - data_directory: The parent directory for ERA5 data.
+      The function expects the data files to be in subdirectories:
+      tcwv, viwve, and viwvn. (Also u_200mb and v_200mb if uv200=True).
+      It will also look under the invarient subdirectory for the topo file:
+      e5.oper.invariant.128_129_z.ll025sc.1979010100_1979010100.nc
     """
 
-    end_of_month_DD = calendar.monthrange(dt_this.year, dt_this.month)[1] # output is (day_of_week, day_of_month)
-    fmt_tpw = ('/home/orca/data/model_anal/era5/from_rda/tcwv/'
-        +'e5.oper.an.sfc.128_137_tcwv.ll025sc.%Y%m0100_%Y%m'+str(end_of_month_DD).zfill(2)+'23.nc')
+    # output is (day_of_week, day_of_month)
+    end_of_month_DD = calendar.monthrange(dt_this.year, dt_this.month)[1]
+
+    fmt_tpw = (f'{data_directory}/tcwv/'
+        + 'e5.oper.an.sfc.128_137_tcwv.ll025sc.%Y%m0100_%Y%m'
+        + str(end_of_month_DD).zfill(2)+'23.nc')
     fn_tpw = dt_this.strftime(fmt_tpw)
     if verbose:
         print(fn_tpw)
@@ -27,8 +38,9 @@ def retrieve_era5_fields_nc(dt_this, verbose=True, uv200=False):
         tpw = DS['TCWV'].data
 
     ## IVT
-    fmt_viwve = ('/home/orca/data/model_anal/era5/from_rda/viwve/'
-        +'e5.oper.an.vinteg.162_071_viwve.ll025sc.%Y%m0100_%Y%m'+str(end_of_month_DD).zfill(2)+'23.nc')
+    fmt_viwve = (f'{data_directory}/viwve/'
+        + 'e5.oper.an.vinteg.162_071_viwve.ll025sc.%Y%m0100_%Y%m'
+        + str(end_of_month_DD).zfill(2)+'23.nc')
     fn_viwve = dt_this.strftime(fmt_viwve)
     if verbose:
         print(fn_viwve)
@@ -36,8 +48,9 @@ def retrieve_era5_fields_nc(dt_this, verbose=True, uv200=False):
         DS = DS0.sel(time=dt_this)
         viwve = DS['VIWVE'].data
 
-    fmt_viwvn = ('/home/orca/data/model_anal/era5/from_rda/viwvn/'
-        +'e5.oper.an.vinteg.162_072_viwvn.ll025sc.%Y%m0100_%Y%m'+str(end_of_month_DD).zfill(2)+'23.nc')
+    fmt_viwvn = (f'{data_directory}/viwvn/'
+        + 'e5.oper.an.vinteg.162_072_viwvn.ll025sc.%Y%m0100_%Y%m'
+        + str(end_of_month_DD).zfill(2)+'23.nc')
     fn_viwvn = dt_this.strftime(fmt_viwvn)
     if verbose:
         print(fn_viwvn)
@@ -46,8 +59,9 @@ def retrieve_era5_fields_nc(dt_this, verbose=True, uv200=False):
         viwvn = DS['VIWVN'].data
 
     if uv200:
-        fmt_v200 = ('/home/orca/data/model_anal/era5/from_rda/v_200mb/%Y/%m/'
-            +'e5.oper.an.pl.128_132_v.ll025uv.%Y%m%d00_%Y%m%d23.lev200mb.6hr.nc')
+        fmt_v200 = (f'{data_directory}/v_200mb/%Y/%m/'
+            + 'e5.oper.an.pl.128_132_v.ll025uv.%Y%m%d00_%Y%m%d23'
+            + '.lev200mb.6hr.nc')
         fn_v200 = dt_this.strftime(fmt_v200)
         if verbose:
             print(fn_v200)
@@ -59,8 +73,9 @@ def retrieve_era5_fields_nc(dt_this, verbose=True, uv200=False):
             print(f'File not found: {fn_v200}.')
             v200 = np.nan * tpw
                 
-        fmt_u200 = ('/home/orca/data/model_anal/era5/from_rda/u_200mb/%Y/%m/'
-            +'e5.oper.an.pl.128_131_u.ll025uv.%Y%m%d00_%Y%m%d23.lev200mb.6hr.nc')
+        fmt_u200 = (f'{data_directory}/u_200mb/%Y/%m/'
+            + 'e5.oper.an.pl.128_131_u.ll025uv.%Y%m%d00_%Y%m%d23'
+            + '.lev200mb.6hr.nc')
         fn_u200 = dt_this.strftime(fmt_u200)
         if verbose:
             print(fn_u200)
@@ -73,7 +88,7 @@ def retrieve_era5_fields_nc(dt_this, verbose=True, uv200=False):
             u200 = np.nan * tpw
 
     ## Orography
-    fn_orog = ('/home/orca/data/model_anal/era5/from_rda/invariant/'
+    fn_orog = (f'{data_directory}/invariant/'
         +'e5.oper.invariant.128_129_z.ll025sc.1979010100_1979010100.nc')
     if verbose:
         print(fn_orog)

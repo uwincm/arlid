@@ -46,7 +46,8 @@ Here are the arguments:
 - Time interval in hours (optional, default = 1), e.g., `-dt 3` for every 3 h.
 - Number of CPUs to use (optional, default = 1), e.g., `-np 8` for 8 CPUs.
 
-As an __example__, to run the script for 0000 UTC 1 January 2020, run it like this:
+As an __example__, to run the script for 0000 UTC 1 January 2020,
+run it like this:
 ```
 python generate_ar_object_masks.era5.py 2020010100 2020010100
 ```
@@ -73,6 +74,7 @@ If this is successful, you should be able to run it on any time range.
 ## Input and Output
 
 ### Input 
+
 ERA-5 data were obtained using the NSF NCAR/UCAR Research Data Archive
 ([RDA](https://rda.ucar.edu/)), dataset number 633.0.
 The files needed start with `e5.oper.an.sfc.128_137_tcwv.ll025sc`
@@ -83,8 +85,25 @@ by the RDA web application to download the data.
 The input directory is to be set in the script
 `generate_ar_object_masks.era5.py`.
 
+The function `retrieve_era5_fields_nc.py` reads in the data. It takes
+a main data directory as in input. The main data directory is specified
+as the global variable DATA_DIRECTORY at the top of
+`retrieve_era5_fields_nc.py`. You need to edit this for your system.
+```
+## You need to set this for your system.
+DATA_DIRECTORY='/home/orca/data/model_anal/era5/from_rda'
+```
+Under the main data directory, it expects
+the following sub directories underneath the main data directory:
+- `tcwv/`: contains the TPW files
+- `viwve/`: eastward component of IVT
+- `viwvn/`: northward component of IVT
+- `invariant/`: Topography file
+  `e5.oper.invariant.128_129_z.ll025sc.1979010100_1979010100.nc`
+
 
 ### Output 
+
 Running this code will generate the outputs under the `mask_data/` directory.
 Subdirectories will be created by year, month, and day.
 
