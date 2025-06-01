@@ -182,10 +182,12 @@ lpt_options['do_lpt_calc'] = True
 # lpt_options['do_lpt_calc'] = False
 
 ## Options for the LPT step.
-lpt_options['min_overlap_points'] = 10      # LP object connectivity is based on either points
+lpt_options['min_overlap_points'] = 1      # LP object connectivity is based on either points
+lpt_options['min_overlap_area'] = 12000        # -- AND area overlap [km2]
 lpt_options['min_overlap_frac'] = 0.2         # -- OR fraction of either LP object.
-lpt_options['min_lp_objects_points'] = 10    # Disregard LP objects smaller than this.
-lpt_options['min_lpt_duration_hours'] = 48 # 3*24  # Minumum duration to keep it as an LPT (hours)
+lpt_options['min_lp_objects_points'] = 1    # Disregard LP objects smaller than this.
+lpt_options['min_lp_objects_area'] = 120000    # Disregard LP objects smaller than this area.
+lpt_options['min_lpt_duration_hours'] = 48 # Minumum duration to keep it as an LPT (hours)
 lpt_options['fall_below_threshold_max_hours'] = 0   # How long to allow center jumps (hours)
 lpt_options['lpt_n_cores'] = 8             # How many CPUs to use for LPT steps?
 
