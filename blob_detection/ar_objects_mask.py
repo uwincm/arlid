@@ -51,8 +51,14 @@ def ndimage_label_periodic_x(image):
 
     return (label_im, labels)
 
-
 class ar_object_mask:
+
+    # Area thresholds
+    TROPICAL_MOISTURE_EXTENT_MIN_AREA = 1e7 # km2
+    AR_MIN_AREA = 120000.0 # km2
+    AR_MIN_AREA_OUTSIDE_TROPICS = 60000.0 # km2
+
+
     # Initialize empty masks and supporting variables.
     # Initialize using lat and lon coordinates.
     def __init__(self, valid_datetime):
@@ -403,7 +409,8 @@ class ar_object_mask:
         # 6. Eliminate blobs that are too small to be deep tropics (planetary scale)
         mask_labeled, nb_labels = ndimage_label_periodic_x(deep_tropics_mask)
         for n in range(1,nb_labels+1):
-            if np.nansum(self.grid_cell_area * (mask_labeled==n)) < 1e7:
+            area = np.nansum(self.grid_cell_area * (mask_labeled == n))
+            if area < self.TROPICAL_MOISTURE_EXTENT_MIN_AREA:
                 deep_tropics_mask[mask_labeled == n] = 0
 
         # 7. Taking out the concave "kinks" using the binary_closing method
@@ -467,7 +474,8 @@ class ar_object_mask:
         # 6. Eliminate blobs that are too small to be deep tropics (planetary scale)
         mask_labeled, nb_labels = ndimage_label_periodic_x(deep_tropics_mask)
         for n in range(1,nb_labels+1):
-            if np.nansum(self.grid_cell_area * (mask_labeled==n)) < 1e7:
+            area = np.nansum(self.grid_cell_area * (mask_labeled == n))
+            if area < self.TROPICAL_MOISTURE_EXTENT_MIN_AREA:
                 deep_tropics_mask[mask_labeled == n] = 0
 
         # 7. Taking out the concave "kinks" using the binary_closing method
@@ -498,10 +506,8 @@ class ar_object_mask:
         4. Feature must stick out of the deep_tropics_mask by at least MINAREA.
         5. Features are not allowed to cross the equator.
         """
-        # IVT_GAUSS_LAPLACE_THRESH = -10.0
         IVT_GAUSS_LAPLACE_THRESH = -7.0
         TPW_ANOM_THRESH = 10.0
-        MINAREA = 120000.0
 
         # if self.tpw_background.ndim == 2 and self.ivt_background.ndim == 2:
         if self.deep_tropics_mask.ndim == 2 and self.ivt.ndim == 2:
@@ -521,7 +527,7 @@ class ar_object_mask:
             mask_ivt = (ivt_filtered < IVT_GAUSS_LAPLACE_THRESH)
 
             # Nerf the strong monsoon circulations:
-            # - Eastward IVT > 500
+            # - Eastward IVT > 250 or < -250.
             # - Within deep tropics mask
             mask_ivt[np.logical_and(
                 self.deep_tropics_mask,
@@ -546,109 +552,32 @@ class ar_object_mask:
                 self.tpw - self.tpw_background > 0.5*self.tpw_background
             )
                 
-
-            """
-            thresh = 1*TPW_ANOM_THRESH
-            rad = int(5.0/.25)
-            # rad = int(7.5/.25)
-
-            max_topo_for_tpw = 500.0 # meters
-            # max_topo_for_tpw = 1000.0 # meters  # Still picking up TPW topo gradients when I use 1000 m.
-
-            is_local_max = 0.0 * self.tpw
-            dt11 = dt.datetime.now()
-
-            S = self.tpw.shape
-            # nskip = 0
-            for jj in range(rad, S[0] - rad):
-                for ii in range(rad, S[1] - rad):
-                    if (self.topography[jj,ii] > max_topo_for_tpw):
-                        continue
-
-                    if jj < rad:
-                        this_col = np.append(np.full(rad-jj, self.tpw[0,ii]), self.tpw[0:jj+rad+1, ii])
-                        this_col_topo = np.append(np.full(rad-jj, self.topography[0,ii]), self.topography[0:jj+rad+1, ii])
-                    elif jj > S[0]-rad-1:
-                        this_col = np.append(self.tpw[jj-rad:S[0], ii], np.full(rad-(S[0]-jj), self.tpw[S[0]-1,ii]))
-                        this_col_topo = np.append(self.topography[jj-rad:S[0], ii], np.full(rad-(S[0]-jj), self.topography[S[0]-1,ii]))
-                    else:
-                        this_col = 1.0*self.tpw[jj-rad:jj+rad+1, ii]
-                        this_col_topo = self.topography[jj-rad:jj+rad+1, ii]
-                    this_col[this_col_topo > max_topo_for_tpw] = 999
-
-                    min_val_1 = np.nanmin(this_col[0:rad])
-                    min_val_2 = np.nanmin(this_col[rad+1:])
-                    diff1 = self.tpw[jj,ii] - min_val_1
-                    diff2 = self.tpw[jj,ii] - min_val_2
-                    if (diff1 > thresh and diff2 > thresh):
-                        is_local_max[jj,ii] = 1
-                        # nskip += 1
-                        # continue
-
-                    if ii < rad:
-                        this_row = np.append(self.tpw[jj, S[1]-(rad-ii):S[1]], self.tpw[jj, 0:ii+rad+1])
-                        this_row_topo = np.append(self.topography[jj, S[1]-(rad-ii):S[1]], self.topography[jj, 0:ii+rad+1])
-                    elif ii > S[1]-rad-1:
-                        this_row = np.append(self.tpw[jj, ii-rad:S[1]], self.tpw[jj, 0:rad-(S[1]-ii-1)])
-                        this_row_topo = np.append(self.topography[jj, ii-rad:S[1]], self.topography[jj, 0:rad-(S[1]-ii-1)])
-                    else:
-                        this_row = 1.0*self.tpw[jj, ii-rad:ii+rad+1]
-                        this_row_topo = self.topography[jj, ii-rad:ii+rad+1]
-                    this_row[this_row_topo > max_topo_for_tpw] = 999
-
-                    min_val_1 = np.nanmin(this_row[0:rad])
-                    min_val_2 = np.nanmin(this_row[rad+1:])
-                    diff1 = self.tpw[jj,ii] - min_val_1
-                    diff2 = self.tpw[jj,ii] - min_val_2
-                    if (diff1 > thresh and diff2 > thresh):
-                        is_local_max[jj,ii] = 1
-
-
-
-            # print(f'nskip: {nskip}')
-            dt22 = dt.datetime.now()
-            print(('TPW Loop in AR Mask: ', (dt22 - dt11).total_seconds()))
-
-            mask_tpw = is_local_max == 1
-            """
-
-
-
-            mask_tpw = ndimage.binary_fill_holes(mask_tpw)
-
-            # Apply min. area criterion
-            # label_im_tpw, nb_labels_tpw = ndimage_label_periodic_x(mask_tpw)
-            # label_areas = ndimage.sum(area, label_im_tpw, range(nb_labels_tpw+1))
-
-            # for ii in range(1, nb_labels_tpw+1):
-            #     if label_areas[ii] < MINAREA:
-            #         mask_tpw[label_im_tpw == ii] = 0
-
-            self.mask_tpw = mask_tpw
+            self.mask_tpw = ndimage.binary_fill_holes(mask_tpw)
 
             # Final AR mask is the combination of the IVT and TPW masks.
-            # BUT I require that each feature have both a TPW and IVT mask feature.
+            # Each AR mask blob has either an IVT blob or a TPW blob.
+            # They are NOT required to have both.
             mask_combined = 1.0*np.logical_or(mask_ivt, mask_tpw)
-
-            # TPW Mask MUST overlap with IVT mask to count.
-            # mask_labeled, nb_labels = ndimage_label_periodic_x(mask_combined)
-            # for n in range(nb_labels+1):
-            #     if np.nansum(np.logical_and(mask_labeled==n, mask_ivt)) < 1:
-            #         mask_combined[mask_labeled == n] = 0
-            #     if np.nansum(np.logical_and(mask_labeled==n, mask_tpw)) < 1:
-            #         mask_combined[mask_labeled == n] = 0
 
             # Remove blobs that are just too small.
             # Must have a size of at least the MINAREA
             mask_labeled, nb_labels = ndimage_label_periodic_x(mask_combined)
             for n in range(nb_labels+1):
-                if np.nansum(area * (mask_labeled==n)) < MINAREA:
+                if np.nansum(area * (mask_labeled==n)) < AR_MIN_AREA:
                     mask_combined[mask_labeled == n] = 0
 
-            # Remove blobs that don't stick out far (MINAREA) from the deep_tropics_mask
-            label_im_combined, nb_labels_combined = ndimage_label_periodic_x(mask_combined)
+            # Remove blobs that don't stick out far
+            # from the deep_tropics_mask
+            label_im_combined, nb_labels_combined = ndimage_label_periodic_x(
+                                                                mask_combined)
             for ii in range(1, nb_labels_combined+1):
-                if np.nansum(area * np.logical_and(label_im_combined==ii, ~self.deep_tropics_mask)) < 0.5*MINAREA:
+                if np.nansum(
+                    area * np.logical_and(
+                        label_im_combined == ii,
+                        ~self.deep_tropics_mask
+                    )
+                ) < AR_MIN_AREA_OUTSIDE_TROPICS:
+
                     mask_combined[label_im_combined == ii] = 0
 
 
