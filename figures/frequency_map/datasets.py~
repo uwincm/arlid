@@ -1,0 +1,153 @@
+### Functions to get the file name for each year of the datasets.
+def get_fn_gAR(year):
+    data_dir = (
+        '/home/orca/bkerns/projects/mjo_lpt_and_ar/tracking'
+        + '/lpt-python-public/ar.testing/data/ar/g0_0h/thresh1/systems'
+        )
+
+    year2 = year + 1
+    # if year == 2023:
+    #     fn = (data_dir + f'/lpt_composite_mask_{year}060100_{year2}053123.nc')
+    # else:
+    fn = (data_dir + f'/lpt_composite_mask_{year}060100_{year2}063023.nc')
+
+    return fn
+
+def get_fn_gAR12(year):
+    data_dir = (
+        '/home/orca/bkerns/projects/mjo_lpt_and_ar/tracking'
+        + '/lpt-python-public/ar.testing.12h_cutoff/data/ar/g0_0h/thresh1/systems'
+        )
+
+    year2 = year + 1
+    fn = (data_dir + f'/lpt_composite_mask_{year}060100_{year2}063023.nc')
+
+    return fn
+
+
+
+def get_fn_gAR7(year):
+    data_dir = (
+        '/home/orca/bkerns/projects/mjo_lpt_and_ar/tracking'
+        + '/lpt-python-public/ar.testing7/data/ar/g0_0h/thresh1/systems'
+        )
+
+    year2 = year + 1
+    fn = (data_dir + f'/lpt_composite_mask_{year}060100_{year2}063023.nc')
+
+    return fn
+
+
+
+def get_fn_gAR7_merge_split(year):
+    data_dir = (
+        '/home/orca/bkerns/projects/mjo_lpt_and_ar/tracking'
+        + '/lpt-python-public/ar.testing7.merge_split/data/ar/g0_0h/thresh1/systems'
+        )
+
+    year2 = year + 1
+    fn = (data_dir + f'/lpt_composite_mask_{year}060100_{year2}063023.nc')
+
+    return fn
+
+
+
+
+def get_fn_bk_v1(year):
+    data_dir = (
+        '/home/orca/bkerns/projects/mjo_lpt_and_ar/tracking'
+        + '/lpt-python-public-2023/ar/data/ar/g0_0h/thresh1/systems'
+        )
+
+    year2 = year + 1
+    if year == 2023:
+        fn = (data_dir + f'/lpt_composite_mask_{year}060100_{year2}053123.nc')
+    else:
+        fn = (data_dir + f'/lpt_composite_mask_{year}060100_{year2}063023.nc')
+
+    return fn
+
+
+def get_fn_scafet(year):
+    data_dir = '/home/orca/data/ar/artmip/scafet'
+    fn = (data_dir + f'/MERRA2.ar_tag.SCAFET_v1.3hourly.{year}0101-{year}1231.nc')
+    return fn
+
+
+def get_fn_tempest_lr(year):
+    data_dir = '/home/orca/data/ar/artmip/tempestLR'
+    fn = (data_dir + f'/ERA5.ar_tag.TempestLR.1hr.{year}.nc')
+    return fn
+
+
+def get_fn_tempest_lr_m2(year):
+    data_dir = '/home/orca/data/ar/artmip/tempestLR'
+    fn = (data_dir + f'/MERRA2.ar_tag.TempestLR.1hr.{year}.nc')
+    return fn
+
+
+
+def get_fn_arconnect(year):
+    data_dir = '/home/orca/data/ar/artmip/arconnect'
+    # fn = (data_dir + f'/cmip6_MRI-EMS2-0_ssp585_r1i1p1.ar_tag.ARCONNECT_v2.6hr.{year}??????00-{year}??????00.nc')
+    fn = (data_dir + f'/ERA5.ar_tag.ARCONNECT_v2.1hr.{year}????-{year}????.nc')
+    return fn
+
+
+
+# Options for each dataset.
+datasets = {}
+
+datasets['gar'] = {
+    'label': 'gAR',
+    'get_fn_func': get_fn_gAR,
+    'ar_mask_var': 'mask'
+    }
+
+
+datasets['gar12'] = {
+    'label': 'gAR12',
+    'get_fn_func': get_fn_gAR12,
+    'ar_mask_var': 'mask'
+    }
+
+datasets['gar7'] = {
+    'label': 'gAR7',
+    'get_fn_func': get_fn_gAR7,
+    'ar_mask_var': 'mask'
+    }
+
+datasets['gar7_merge_split'] = {
+    'label': 'gAR7_merge_split',
+    'get_fn_func': get_fn_gAR7_merge_split,
+    'ar_mask_var': 'mask'
+    }
+
+
+datasets['scafet'] = {
+    'label': 'scafet',
+    'get_fn_func': get_fn_scafet,
+    'ar_mask_var': 'ar_binary_tag'
+    }
+
+datasets['tempestlr'] = {
+    'label': 'TempestLR',
+    'get_fn_func': get_fn_tempest_lr,
+    'ar_mask_var': 'ar_binary_tag'
+    }
+
+
+datasets['tempestlr_m2'] = {
+    'label': 'TempestLR_merra2',
+    'get_fn_func': get_fn_tempest_lr_m2,
+    'ar_mask_var': 'ar_binary_tag'
+    }
+
+
+
+datasets['arconnect'] = {
+    'label': 'AR-CONNECT',
+    'get_fn_func': get_fn_arconnect,
+    'ar_mask_var': 'ar_binary_tag'
+    }
+
