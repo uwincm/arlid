@@ -23,15 +23,18 @@ verbose = True
 
 def get_lpt_composite_mask_file_name(year1):
 
-    year2 = year1 + 1
+    if year1 == 2020:
+        year2 = year1 + 4
+    else:
+        year2 = year1 + 5
 
     data_dir = (
-        '/home/orca/bkerns/projects/mjo_lpt_and_ar/tracking/'
-        + 'lpt-python-public/ar.testing7.merge_split/data/ar/g0_0h/thresh1/systems'
+        '/home/orca3/bkerns/projects/mjo_lpt_and_ar/tracking/'
+        + 'lpt-python-public/ar/data_revision_final/ar/g0_0h/thresh1/systems'
     )
 
     ymdh1 = f'{year1}060100'
-    ymdh2 = f'{year2}063023'
+    ymdh2 = f'{year2}053123'
 
     fn_composite_mask = f'{data_dir}/lpt_composite_mask_{ymdh1}_{ymdh2}.nc'
 
@@ -145,30 +148,21 @@ for ax in [ax1,ax2,ax3, ax4]:
     gridlines.xlabel_style = {'size': 9, 'color': 'k'}
     gridlines.ylabel_style = {'size': 9, 'color': 'k'}
 
+H1 = ax1.pcolormesh(lon, lat, ivt_filtered, vmin=-15, vmax=15, cmap='cet_bwy',
+    rasterized=True, transform=ccrs.PlateCarree())
 
+ax1.contour(lon, lat, ivt_filtered, levels=[-7.0,], colors='k',
+    linewidths=0.7, linestyles='-', transform=ccrs.PlateCarree())
 
-
-# ax1.coastlines()
-# ax1.set_extent(plot_area, crs=ccrs.PlateCarree())
-
-H1 = ax1.pcolormesh(lon, lat, ivt_filtered, vmin=-15, vmax=15, cmap='cet_bwy', transform=ccrs.PlateCarree())
-ax1.contour(lon, lat, ivt_filtered, levels=[-7.0,], colors='k', linewidths=0.7, linestyles='-', transform=ccrs.PlateCarree())
-
-
-cax=fig.add_axes([0.15, 0.95, 0.30, 0.03])
+cax=fig.add_axes([0.20, 0.95, 0.25, 0.03])
 plt.colorbar(H1, cax=cax, orientation='horizontal', location='top',
     label='LoG Filtered IVT [kg m$^{-1}$ s$^{-1}$ deg$^{-2}$]')
 
-
-
-
-
 # TPW
 
-# H2 = ax2.pcolormesh(lon, lat, tpw_background,
-#     vmin=0.0, vmax=60.0, cmap='cet_rainbow4', transform=ccrs.PlateCarree())
 H2 = ax2.pcolormesh(lon, lat, tpw - tpw_background,
-    vmin=-15.0, vmax=15.0, cmap='cet_gwv', transform=ccrs.PlateCarree())
+    vmin=-15.0, vmax=15.0, cmap='cet_gwv', rasterized=True,
+    transform=ccrs.PlateCarree())
 
 tpw_mask1 = tpw - tpw_background > 10.0
 tpw_mask2 = tpw - tpw_background > 0.5*tpw_background
@@ -177,13 +171,12 @@ tpw_mask = np.logical_or(tpw_mask1, tpw_mask2)
 ax2.contour(lon, lat, tpw_mask,
     levels=[0.5,], colors='k', linewidths=0.7, transform=ccrs.PlateCarree())
 
-# plt.colorbar(H2)
-cax=fig.add_axes([0.65, 0.95, 0.30, 0.03])
+cax=fig.add_axes([0.65, 0.95, 0.25, 0.03])
 plt.colorbar(H2, cax=cax, orientation='horizontal', location='top',
     label='TPW Diff. [mm]')
 
-ax2.contourf(lon, lat, topography, levels=[1000, 9999], colors=['none',], hatches=['////',], transform=ccrs.PlateCarree())
-
+ax2.contourf(lon, lat, topography, levels=[1000, 9999], colors=['none',], 
+    hatches=['////',], transform=ccrs.PlateCarree())
 
 
 ## Mask showing the final IVT mask
@@ -192,29 +185,17 @@ ax2.contourf(lon, lat, topography, levels=[1000, 9999], colors=['none',], hatche
 H3 = ax3.contourf(lon, lat, mask_ivt, levels=[-999.0,0.5,999.0],
     colors = ['none','darkgrey'], transform=ccrs.PlateCarree(), zorder=100)
 
-# plt.colorbar(H3)
-
-# ax3.contour(lon, lat, viwve, levels=[-250, 250,], colors='r', linestyles='-', transform=ccrs.PlateCarree())
-
-# exclude_ivt_tropics = np.logical_and(deep_tropics_mask, np.abs(viwve) > 250)
-# ax3.contourf(lon, lat, exclude_ivt_tropics, levels=[0.5, 9999], colors=['none',], hatches=['////',], transform=ccrs.PlateCarree())
-
-
-
 ## TPW Mask
 
 # IVT Mask
 H4 = ax4.contourf(lon, lat, tpw_mask, levels=[-999.0,0.5,999.0],
     colors = ['none','darkgrey'], transform=ccrs.PlateCarree(), zorder=100)
 
-# '#d95f02'
-# plt.colorbar(H4)
-
 ax4.contourf(lon, lat, topography, levels=[1000, 9999],
     colors=['none',], hatches=['////',], transform=ccrs.PlateCarree())
 
 
-year1 = 2003 #dt1.year
+year1 = 2000 #dt1.year
 fn_mask = get_lpt_composite_mask_file_name(year1)
 with xr.open_dataset(fn_mask) as ds:
     ds_this_time = ds.sel(time=dt1)
@@ -239,6 +220,7 @@ add_panel_label(ax2, 'b.')
 add_panel_label(ax3, 'c.')
 add_panel_label(ax4, 'd.')
 
-plt.tight_layout()
+plt.tight_layout(h_pad=0.5, w_pad=-3.0)
 
-plt.savefig('ivt_and_tpw_mask.png', dpi=150, bbox_inches='tight')
+plt.savefig('fig03.ivt_and_tpw_mask.png', dpi=150, bbox_inches='tight')
+plt.savefig('fig03.ivt_and_tpw_mask.pdf', dpi=150, bbox_inches='tight')
