@@ -1,5 +1,7 @@
 This README file describes which scripts create which figures.
 
+See requirements.txt for the Python dependencies.
+
 The 8 figures are organized into these directories by theme:
 - ar_families
 - cases
