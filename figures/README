@@ -4,9 +4,7 @@ See requirements.txt for the Python dependencies.
 
 The 8 figures are organized into these directories by theme:
 - methodology (Figs. 1, 2, and 3)
-- ar_families
-- cases
-- deep_tropics_connection
+- ar_families (Figs. 4 and 5)
 - initiation_and_dissipation (Fig. 6)
 - duration (Fig. 7)
 - frequency_map (Fig. 8)
