@@ -1,0 +1,80 @@
+import numpy as np 
+import xarray as xr
+import datetime as dt
+import cftime 
+# import matplotlib.pyplot as plt
+# import cartopy.crs as ccrs
+import sys
+import glob
+
+from datasets import *
+
+def save_to_netcdf(lon, lat, freq, fn_out):
+
+    coords = {
+        'lon': (['lon',], lon, {'units':'degrees_E'}),
+        'lat': (['lat',], lat, {'units':'degrees_N'})
+        }
+
+    desc = 'Frequency of AR systems at each grid point (0-1)'
+    data_vars = {
+        'freq' : (['lat','lon'], freq, {'units':'1','description':desc})
+        }
+
+    ds_out = xr.Dataset(data_vars=data_vars, coords=coords)
+    print(f'--> {fn_out}')
+    ds_out.to_netcdf(fn_out)
+
+
+if __name__ == '__main__':
+
+    this_label = 'gar_revised'
+    # this_label = sys.argv[1]
+
+    if this_label in datasets:
+
+        n_times = 0
+        varname_ar = datasets[this_label]['ar_mask_var']
+
+        for year in range(1980,2025,5):
+
+            # Note: fn can be a glob.glob template here.
+            fn = datasets[this_label]['get_fn_func'](year)
+            print(fn)
+
+            if len(sorted(glob.glob(fn))) > 0:
+
+                with xr.open_mfdataset(sorted(glob.glob(fn)), use_cftime=True, decode_times=True) as ds:
+                    #if this_label == 'gar':
+                    #    ds2 = ds.sel(time = slice(dt.datetime(year,6,1,0,0,0), dt.datetime(year+5,5,31,23,0,0)))
+                    #else:
+                    #ds2 = ds.copy()
+
+                    #ds2.compute()
+
+                    this_sum = np.nansum(ds['mask'].values, axis=0)
+
+                    if n_times == 0:
+                        lon = ds['lon'].values
+                        lat = ds['lat'].values
+                        total_sum = this_sum.copy()
+                    else:
+                        total_sum += this_sum
+
+                    n_times += len(ds.time.values)
+
+            else:
+                print('No files found for this year.')
+
+        freq = total_sum / n_times
+
+        # Save to NetCDF
+        lab = datasets[this_label]['label']
+        fn_out = f'ar_frequency.{lab}.nc'
+        save_to_netcdf(lon, lat, freq, fn_out)
+
+
+    else:
+        print(f'I do not know how to deal with {this_label}.')
+        print('List of valid datasets in datasets.py:')
+        print(list(datasets))

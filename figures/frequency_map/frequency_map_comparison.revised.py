@@ -1,0 +1,93 @@
+import numpy as np 
+import xarray as xr
+import datetime as dt
+import cftime 
+import matplotlib.pyplot as plt
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
+
+central_longitude = 240
+PROJ = projection=ccrs.Robinson(central_longitude=central_longitude) #ccrs.PlateCarree(central_longitude=180.0)
+PROJ0 = ccrs.PlateCarree()
+
+def add_frequency_to_map(ax, lon, lat, freq):
+    VMIN=0.1
+    VMAX=0.4
+    levels = np.arange(VMIN, VMAX+0.05, 0.05)
+    H = ax.contourf(lon, lat, freq, levels=levels, vmin=VMIN, vmax=VMAX, alpha=0.8, extend='max', transform=PROJ0)
+    # ax.contour(lon, lat, freq, levels = np.arange(0.01,0.11,0.01), colors='k', transform=PROJ0)
+    ax.contour(lon, lat, freq, levels = [0.01, 0.05], colors='k', linewidths=0.7, transform=PROJ0)
+    return H
+
+fig = plt.figure(figsize=(7,5))
+
+ax1 = fig.add_subplot(2,2,1, projection=PROJ)
+ax1.add_feature(cfeature.LAND, edgecolor='gray')
+ax1.coastlines(color='k')
+# ax1.set_extent([0, 360, -60, 60], crs=PROJ0)
+
+with xr.open_dataset('ar_frequency.gAR_revised.nc') as ds:
+    lon = ds.lon
+    lat = ds.lat
+    freq = ds['freq'].data
+
+H1 = add_frequency_to_map(ax1, lon, lat, freq)
+
+# plt.colorbar(H1, label='Frac. of Times')
+
+with xr.open_dataset('ar_frequency.scafet.nc') as ds:
+    lon = ds.lon
+    lat = ds.lat
+    freq = ds['freq'].data
+
+ax2 = fig.add_subplot(2,2,2, projection=PROJ)
+ax2.add_feature(cfeature.LAND, edgecolor='gray')
+ax2.coastlines(color='k')
+# ax2.set_extent([0, 360, -60, 60], crs=PROJ0)
+
+H2 = add_frequency_to_map(ax2, lon, lat, freq)
+
+with xr.open_dataset('ar_frequency.TempestLR.nc') as ds:
+    # lon, lat in the file is wrong--all missing values.
+    lon = np.arange(0, 360.0, 0.25) #ds.lon
+    lat = np.arange(90, -90.25, -0.25) #ds.lat
+    freq = ds['freq'].data
+    print(np.nanmax(freq))
+
+
+ax3 = fig.add_subplot(2,2,3, projection=PROJ)
+ax3.add_feature(cfeature.LAND, edgecolor='gray')
+ax3.coastlines(color='k')
+# ax3.set_extent([0, 360, -60, 60], crs=PROJ0)
+
+H3 = add_frequency_to_map(ax3, lon, lat, freq)
+
+with xr.open_dataset('ar_frequency.AR-CONNECT.nc') as ds:
+    lon = ds.lon
+    lat = ds.lat
+    freq = ds['freq'].data
+
+
+ax4 = fig.add_subplot(2,2,4, projection=PROJ)
+ax4.add_feature(cfeature.LAND, edgecolor='gray')
+ax4.coastlines(color='k')
+# ax4.set_extent([0, 360, -60, 60], crs=PROJ0)
+
+H4 = add_frequency_to_map(ax4, lon, lat, freq)
+
+
+# cax = fig.add_subplot([0.95, 0.2, 0.03, 0.6])
+# fig.colorbar(H1, label='Frac. of Times', cax=cax)
+cax = fig.add_subplot([0.25, 1.05, 0.5, 0.03])
+fig.colorbar(H1, label='Frac. of Times', orientation='horizontal', cax=cax)
+
+
+ax1.set_title('a. ARLiD (This Study)')
+ax2.set_title('b. SCAFET')
+ax3.set_title('c. TempestLR')
+ax4.set_title('d. AR-CONNECT')
+
+plt.tight_layout(h_pad=0.5, w_pad=1.0)
+
+plt.savefig('fig8.ar_freq_comparison.revised.png', dpi=100, bbox_inches='tight')
+plt.savefig('fig8.ar_freq_comparison.revised.pdf', dpi=100, bbox_inches='tight')
