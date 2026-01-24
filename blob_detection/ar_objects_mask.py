@@ -198,6 +198,9 @@ class ar_object_mask:
             np.abs(111.0*111.0*dx*dy * np.cos(self.lat * np.pi / 180.0))
             )
 
+        # Set spatial resolution.
+        self.res = dx[0,0]
+
     def are_coordinates_set(self):
         if self.lon.ndim == 2 and self.lat.ndim == 2:
             return True
@@ -265,7 +268,7 @@ class ar_object_mask:
 
     def calc_tpw_background(self):
         
-        rad = int(5.0/.25)
+        rad = int(5.0/self.res) # radius in grid points
         MAXTOPO = 500.0
         # MAXTOPO = 1000.0
 
