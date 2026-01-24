@@ -1,3 +1,8 @@
+# Output files
+
+# blob outputs
+blob_detection/mask_data
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

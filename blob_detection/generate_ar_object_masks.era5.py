@@ -84,7 +84,7 @@ if __name__ == '__main__':
 
     dt_list = date_range(start=args.date_begin,
                          end=args.date_end,
-                         freq=f'{args.deltat}H')
+                         freq=f'{args.deltat}h')
 
     with Pool(args.np) as p:
         r = list(tqdm.tqdm(p.imap(process_a_time, dt_list),
