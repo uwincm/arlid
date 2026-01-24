@@ -440,8 +440,14 @@ class ar_object_mask:
         are themselves ARs.
         """
 
+        # Laplacian of Gaussian filer width.
+        # NOTE: Originally it was hard-coded to 5 points for 0.25 degree resolution.
+        # hence, 1.25 deg.
+        log_radius_degrees = 1.25 # degrees
+        log_radius_points = log_radius_degrees / self.res
+
         # 1. First guess mask: Based on edge detection of TPW (Laplacian of Gaussian)
-        tpw_LoG_filtered = ndimage.gaussian_laplace(self.tpw, [5,5], truncate=2)
+        tpw_LoG_filtered = ndimage.gaussian_laplace(self.tpw, [log_radius_points,log_radius_points], truncate=2)
 
         # Attempt an alternative deep tropics mask
         deep_tropics_mask0 = (tpw_LoG_filtered < -0.5)
@@ -449,8 +455,7 @@ class ar_object_mask:
         # 2. Erosion to eliminate the "tentacles" that stick out (e.g., ARs)
 
         # 2.1. Shape used for erosion/dilation: A circle of radius "shape_radius"
-        dx = self.lon[0,1] - self.lon[0,0]
-        shape_radius = int(5.0 / dx)
+        shape_radius = int(5.0 / self.res)
         shape = np.zeros([2*shape_radius+1, 2*shape_radius+1])
         x, y = np.meshgrid(
             np.arange(-1*shape_radius, shape_radius+1),
