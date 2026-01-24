@@ -511,6 +511,8 @@ class ar_object_mask:
         """
         IVT_GAUSS_LAPLACE_THRESH = -7.0
         TPW_ANOM_THRESH = 10.0
+        AR_MIN_AREA = self.AR_MIN_AREA
+        AR_MIN_AREA_OUTSIDE_TROPICS = self.AR_MIN_AREA_OUTSIDE_TROPICS
 
         # if self.tpw_background.ndim == 2 and self.ivt_background.ndim == 2:
         if self.deep_tropics_mask.ndim == 2 and self.ivt.ndim == 2:
